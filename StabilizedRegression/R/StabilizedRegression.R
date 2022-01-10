@@ -264,18 +264,18 @@ StabilizedRegression <- function(X, Y, A,
     if(m == 1){
       pars$size_weight <- 1
     }
-    else if(pars$size_weight == "const"){
+    else if(pars$size_weight[1] == "const"){
       pars$size_weight <- rep(1/m, m)
     }
-    else if(pars$size_weight == "linear"){
+    else if(pars$size_weight[1] == "linear"){
       pars$set_size_weight <- c(1:floor(m/2), ceiling(m/2):1)
       pars$set_size_weight <- pars$set_size_weight/sum(pars$set_size_weight)
     }
-    else if(pars$size_weight == "quadratic"){
+    else if(pars$size_weight[1] == "quadratic"){
       pars$set_size_weight <- c(1:floor(m/2), ceiling(m/2):1)^2
       pars$set_size_weight <- pars$set_size_weight/sum(pars$set_size_weight)
     }
-    else if(pars$size_weight == "rbf"){
+    else if(pars$size_weight[1] == "rbf"){
       pars$set_size_weight <- exp(-c(-(ceiling(m/2):1), 1:floor(m/2))^2/m)
       pars$set_size_weight <- pars$set_size_weight/sum(pars$set_size_weight)
     }
