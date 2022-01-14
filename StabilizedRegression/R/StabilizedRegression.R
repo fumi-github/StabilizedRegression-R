@@ -327,6 +327,9 @@ StabilizedRegression <- function(X, Y, A,
     warning("alpha_stab is NA, all sets were selected")
     stabmods <- rep(TRUE, length(pval_stab))
   }
+  if(verbose > 0){
+    print(paste0(sum(stabmods), " of ", length(stabmods), " sets are significantly stable"))
+  }
   if(sum(stabmods) == 0){
     warning(paste("No significantly stable sets at level alpha_stab.",
                   "Top 10 percent of sets were selected"))
@@ -482,5 +485,8 @@ StabilizedRegression <- function(X, Y, A,
   }
 
   
+  res$pval_stab = pval_stab
+  res$predmods_stab_pval_stab = pval_stab[stabmods & predmods_stab]
+  res$predmods_stab_mse = mse[stabmods & predmods_stab]
   return(res)
 }
