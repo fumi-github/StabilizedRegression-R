@@ -189,6 +189,35 @@ getpval <- function(Y, X, Alist, maxNoObs=1000,
                                      })))
     pval <- (sum(stab_scores_null>=stab_score)+1)/(length(stab_scores_null)+1)
   }
+  # When environments A are strongly heterogeneous, stability p-value becomes
+  # zero for all learner sets, thus cannot differentiate the sets.
+  # Instead of p-value, return the negative score, which is a negative number.
+  else if(test == "mean_sres_score"){
+    n <- length(Y)
+    R.scaled <- vector("list", length(Alist))
+    Projections <- vector("list", length(Alist))
+    for(i in 1:K){
+      fit <- lm.fit(X[Alist[[i]],,drop=FALSE], Y[Alist[[i]]])
+      is_ok <- !is.na(fit$coefficients)
+      Rsmall <- qr.R(fit$qr)[is_ok,,drop=FALSE][,is_ok,drop=FALSE]
+      Projections[[i]] <- (X[,is_ok,drop=FALSE] %*%
+                             backsolve(Rsmall,
+                                       t(qr.Q(fit$qr)[,is_ok,drop=FALSE])))
+      R.scaled[[i]] <- Y - Projections[[i]] %*% Y[Alist[[i]]]
+      R.scaled[[i]] <- R.scaled[[i]]/sd(R.scaled[[i]])
+    }
+    pairwise <- t(combn(K, 2))
+    resample_fn <- function(res){
+      meanvec <- sapply(Alist, function(Aind) mean(res[Aind]))
+      statfun_mean <- function(i, j){
+        T0 <- abs(meanvec[i] - meanvec[j])
+        return(T0)
+      }
+      return(sum(mapply(statfun_mean, pairwise[, 1], pairwise[, 2])))
+    }
+    stab_score <- sum(sapply(R.scaled, function(res) resample_fn(res)))
+    pval <- -stab_score
+  }
   else if(test == "meanvar_sres"){
     n <- length(Y)
     R.scaled <- vector("list", length(Alist))
